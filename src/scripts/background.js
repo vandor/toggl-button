@@ -1618,6 +1618,7 @@ chrome.tabs.onUpdated.addListener(TogglButton.tabUpdated);
 chrome.alarms.onAlarm.addListener(TogglButton.pomodoroAlarmStop);
 TogglButton.startCheckingDayEnd(Db.get("stopAtDayEnd"));
 chrome.runtime.onMessage.addListener(TogglButton.newMessage);
+chrome.runtime.onMessageExternal.addListener(TogglButton.newMessage);
 chrome.notifications.onClosed.addListener(TogglButton.processNotificationEvent);
 chrome.notifications.onClicked.addListener(TogglButton.processNotificationEvent);
 if (!FF) { // not supported in FF
