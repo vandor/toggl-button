@@ -117,3 +117,23 @@ togglbutton.render('.task_item .content:not(.toggl)', {observe: true}, function 
 
   container.insertBefore(link, container.lastChild);
 });
+
+togglbutton.render('.project_editor_instance:not(.toggl)', {observe: true}, function (elem) {
+  elem.addEventListener('keydown', function (e) {
+    if (e.altKey && e.keyCode === 13 && e.target.matches('div.richtext_editor')) {
+      let description = e.target.innerText;
+      let projectNames = getProjectNames(this);
+      let opts = {
+        type: 'timeEntry',
+        respond: true,
+        description: description,
+        projectName: projectNames,
+        createdWith: togglbutton.fullVersion + "-" + togglbutton.serviceName,
+        service: togglbutton.serviceName
+      };
+      chrome.runtime.sendMessage(opts, function (response) {
+        togglbutton.updateTimerLink(response.entry);
+      });
+    }
+  });
+}, 'div#editor');
