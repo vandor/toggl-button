@@ -348,20 +348,23 @@ var TogglButton = {
     }
   },
 
-  findProjectByName: function (nameOrNames) {
+  findProjectByName: function (nameOrNames, clientId) {
     var key,
       name,
       names = [].concat(nameOrNames),
+      projectMap = TogglButton.$user.projectMap,
       result,
       i;
 
     for (i = 0; i < names.length; i++) {
       name = names[i];
-      for (key in TogglButton.$user.projectMap) {
-        if (TogglButton.$user.projectMap.hasOwnProperty(key) && TogglButton.$user.projectMap[key].name === name) {
-          result = TogglButton.$user.projectMap[key];
+      for (key in projectMap) {
+        if (projectMap.hasOwnProperty(key) && projectMap[key].name === name) {
+          result = projectMap[key];
           if (result.wid === TogglButton.$user.default_wid) {
-            return result;
+            if (!clientId || result.cid === clientId) {
+              return result;
+            }
           }
         }
       }
