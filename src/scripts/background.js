@@ -1467,6 +1467,8 @@ var TogglButton = {
         }
       } else if (request.type === 'options') {
         chrome.runtime.openOptionsPage();
+      } else if (request.type === 'createProject') {
+        TogglButton.createProject(request.projectName, request.clientName, sendResponse);
       }
 
     } catch (e) {
@@ -1607,7 +1609,74 @@ var TogglButton = {
         }
       });
     }
-  }
+  },
+
+  findClientByName: function (nameOrNames) {
+    var clientMap = TogglButton.$user.clientMap,
+      key,
+      name,
+      names = [].concat(nameOrNames),
+      result,
+      i;
+
+    for (i = 0; i < names.length; i++) {
+      name = names[i];
+      for (key in clientMap) {
+        if (clientMap.hasOwnProperty(key) && clientMap[key].name === name) {
+          result = clientMap[key];
+          if (result.wid === TogglButton.$user.default_wid) {
+            return result;
+          }
+        }
+      }
+    }
+    return result;
+  },
+
+  createProject: function (projectName, clientName, sendResponse) {
+    var project, client;
+    TogglButton.fetchUser();
+    client = TogglButton.findClientByName(clientName);
+    project = TogglButton.findProjectByName(projectName, client && client.id);
+
+    function respondSuccess(proj) {
+      sendResponse({success: true, type: 'createProject', project: proj});
+    }
+    function respondFail() {
+      sendResponse({success: false, type: 'createProject'});
+    }
+
+    if (project) {
+      respondSuccess(project);
+    } else {
+      TogglButton.ajax('/projects', {
+        method: 'POST',
+        payload: {
+          project: {
+            name: projectName,
+            wid: TogglButton.$user.default_wid,
+            is_private: true,
+            cid: client && client.id,
+          }
+        },
+        onLoad: function (xhr) {
+          var newProject,
+            success = (xhr.status === 200);
+          if (success) {
+            newProject = JSON.parse(xhr.responseText).data;
+            TogglButton.$user.projects.push(newProject);
+            TogglButton.$user.projectMap[newProject.name + newProject.id] = newProject;
+            respondSuccess(newProject);
+          } else {
+            respondFail();
+          }
+        },
+        onError: function (xhr) {
+          respondFail();
+        }
+      });
+    }
+  },
 
 };
 

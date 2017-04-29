@@ -1,5 +1,5 @@
 /*jslint indent: 2 plusplus: true*/
-/*global $: false, togglbutton: false*/
+/*global $: false, togglbutton: false, chrome: false*/
 
 'use strict';
 
@@ -121,19 +121,45 @@ togglbutton.render('.task_item .content:not(.toggl)', {observe: true}, function 
 togglbutton.render('.project_editor_instance:not(.toggl)', {observe: true}, function (elem) {
   elem.addEventListener('keydown', function (e) {
     if (e.altKey && e.keyCode === 13 && e.target.matches('div.richtext_editor')) {
-      let description = e.target.innerText;
-      let projectNames = getProjectNames(this);
-      let opts = {
+      chrome.runtime.sendMessage({
         type: 'timeEntry',
         respond: true,
-        description: description,
-        projectName: projectNames,
+        description: e.target.innerText,
+        projectName: getProjectNames(this),
         createdWith: togglbutton.fullVersion + "-" + togglbutton.serviceName,
         service: togglbutton.serviceName
-      };
-      chrome.runtime.sendMessage(opts, function (response) {
+      }, function (response) {
         togglbutton.updateTimerLink(response.entry);
       });
     }
   });
 }, 'div#editor');
+
+togglbutton.render('#project_list:not(.toggl)', {observe: true}, function (elem) {
+  elem.addEventListener('keydown', function (e) {
+    var projectNameBox, sidebarEle, clientNames, project;
+    projectNameBox = e.target;
+    if (e.altKey && e.keyCode === 13 && projectNameBox.matches('div.richtext_editor')) {
+      sidebarEle = projectNameBox.closest('.manager');
+      clientNames = [];
+      if (!isTopLevelProject(sidebarEle)) {
+        clientNames = getProjectNameHierarchy(getParentEle(sidebarEle));
+      }
+
+      chrome.runtime.sendMessage({
+        type: 'createProject',
+        projectName: projectNameBox.innerText,
+        clientName: clientNames,
+      }, function (response) {
+        if (!response) {
+          console.log('No response from request to create project ' + projectNameBox.innerText);
+        } else if (response.success) {
+          project = response.project;
+          togglbutton.projects[project.name + project.id] = project;
+        } else {
+          console.log('Failure creating new project ' + projectNameBox.innerText);
+        }
+      });
+    }
+  }, {capture: true});
+});
