@@ -24,6 +24,8 @@ var TogglButton = {
   $ApiUrl: "https://www.toggl.com/api/",
   $ApiV8Url: "https://www.toggl.com/api/v8",
   $ApiV9Url: "https://www.toggl.com/api/v9/workspaces",
+  $ReportsApiUrl: "https://www.toggl.com/reports/api/v2",
+  $todayTotalMillis: 0,
   $sendResponse: null,
   $socket: null,
   $retrySocket: false,
@@ -166,6 +168,29 @@ var TogglButton = {
         }
       }
     });
+
+    let today = TogglButton.getTodayFormatted();
+    TogglButton.ajax(`/summary?user_agent=toggl_button&workspace_id=598531&since=${today}&until=${today}`, {
+      baseUrl: TogglButton.$ReportsApiUrl,
+      onLoad: function (xhr) {
+	let data = JSON.parse(xhr.responseText);
+	TogglButton.$todayTotalMillis = data.total_grand;
+      },
+      onError: function (xhr) {
+	console.error('There was a problem contacting the Reports API!', xhr);
+      }
+    });
+  },
+
+  getTodayFormatted: function() {
+    let today = new Date(),
+      mm = today.getMonth() + 1, // getMonth() is zero-based
+      dd = today.getDate();
+
+    return [today.getFullYear(),
+            (mm>9 ? '' : '0') + mm,
+            (dd>9 ? '' : '0') + dd
+           ].join('-');
   },
 
   handleQueue: function () {
@@ -581,7 +606,7 @@ var TogglButton = {
     xhr.open(method, resolvedUrl, true);
     xhr.setRequestHeader("IsTogglButton", "true");
 
-    if (resolvedUrl.match(TogglButton.$ApiUrl)) {
+    if (resolvedUrl.match(TogglButton.$ApiUrl) || resolvedUrl.match(TogglButton.$ReportsApiUrl)) {
       if (token) {
         xhr.setRequestHeader('Authorization', 'Basic ' + btoa(token + ':api_token'));
       } else if (credentials) {

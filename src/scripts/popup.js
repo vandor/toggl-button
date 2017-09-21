@@ -53,6 +53,7 @@ var PopUp = {
         }
         document.querySelector(".header .icon").setAttribute("title", "Open toggl.com - " + TogglButton.$user.email);
         PopUp.$timerRow.classList.remove("has-resume");
+        document.querySelector("#logged-today").innerHTML = PopUp.msToTime(TogglButton.$todayTotalMillis);
         if (TogglButton.$curEntry === null) {
           PopUp.$togglButton.setAttribute('data-event', 'timeEntry');
           PopUp.$togglButton.textContent = 'Start new';
