@@ -53,8 +53,8 @@ var PopUp = {
         }
         document.querySelector(".header .icon").setAttribute("title", "Open toggl.com - " + TogglButton.$user.email);
         PopUp.$timerRow.classList.remove("has-resume");
-        document.querySelector("#logged-today").innerHTML = PopUp.msToTime(TogglButton.$todayTotalMillis);
         if (TogglButton.$curEntry === null) {
+          PopUp.displayLoggedToday(TogglButton.$todayTotalMillis);
           PopUp.$togglButton.setAttribute('data-event', 'timeEntry');
           PopUp.$togglButton.textContent = 'Start new';
           PopUp.$togglButton.parentNode.classList.remove('tracking');
@@ -122,14 +122,17 @@ var PopUp = {
       clearInterval(PopUp.$timer);
       PopUp.$timer = null;
       PopUp.$projectBullet.className = "tb-project-bullet";
+      PopUp.displayLoggedToday(TogglButton.$todayTotalMillis);
       return;
     }
 
-    var duration = PopUp.msToTime(new Date() - new Date(TogglButton.$curEntry.start)),
+    var durationMillis = new Date() - new Date(TogglButton.$curEntry.start),
+      duration = PopUp.msToTime(durationMillis),
       description = TogglButton.$curEntry.description || "(no description)",
       durationField = document.querySelector("#toggl-button-duration");
 
     PopUp.$togglButton.textContent = duration;
+    PopUp.displayLoggedToday(TogglButton.$todayTotalMillis + durationMillis);
 
     // Update edit form duration field
     if (durationField !== document.activeElement && PopUp.durationChanged === false) {
@@ -146,6 +149,10 @@ var PopUp = {
 
       PopUp.setupIcons(TogglButton.$curEntry);
     }
+  },
+
+  displayLoggedToday(milliseconds) {
+    document.querySelector("#logged-today").innerHTML = PopUp.msToTime(milliseconds);
   },
 
   updateMenuTimer: function (data) {
