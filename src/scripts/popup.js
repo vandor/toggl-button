@@ -183,11 +183,15 @@ var PopUp = {
       b,
       i,
       count = 0,
-      checkUnique;
+      checkUnique,
+      entryTimeRanges;
 
     if (!entries || entries.length < 1) {
       return;
     }
+
+    entryTimeRanges = PopUp.findStartAndEndTimes(entries);
+    console.log('entryTimeRanges', entryTimeRanges);
 
     checkUnique = function (te, listEntries) {
       var j;
@@ -250,6 +254,14 @@ var PopUp = {
         }
         li.appendChild(elem);
 
+        // Stop Time
+        elem = document.createElement("div");
+        elem.className = "te-stop-time";
+        let key = PopUp._getTimeEntryKey(te);
+        let latestStopTime = entryTimeRanges[key].stop || '';
+        elem.textContent = PopUp.formatAMPM(latestStopTime);
+        li.appendChild(elem);
+
         // Continue Button
         elem = document.createElement("div");
         elem.className = "te-continue";
@@ -291,6 +303,36 @@ var PopUp = {
     }
 
     PopUp.$entries.appendChild(html);
+  },
+
+  findStartAndEndTimes: function (entries) {
+    return entries.reduce((taskRanges, entry) => {
+      let key = PopUp._getTimeEntryKey(entry);
+      if (key in taskRanges) {
+        let totalRange = taskRanges[key];
+        let earlierStart = Math.min(totalRange.start, new Date(entry.start));
+        let laterStop = Math.max(totalRange.stop, new Date(entry.stop));
+        totalRange.start = new Date(earlierStart);
+        totalRange.stop = new Date(laterStop);
+      } else {
+        taskRanges[key] = {start: new Date(entry.start), stop: new Date(entry.stop)};
+      }
+      return taskRanges;
+    }, {});
+  },
+
+  _getTimeEntryKey: function(timeEntry) {
+    return JSON.stringify([timeEntry.description, timeEntry.pid]);
+  },
+
+  // returns date object in 12hr (AM/PM) format
+  // from https://stackoverflow.com/a/46349470
+  formatAMPM: function formatAMPM (d) {
+    if (!d) return '';
+    let h = d.getHours();
+    return (h % 12 || 12)
+        + ':' + d.getMinutes().toString().padStart(2, '0')
+        + ' ' + (h < 12 ? 'A' : 'P') + 'M';
   },
 
   setupIcons: function (data) {
