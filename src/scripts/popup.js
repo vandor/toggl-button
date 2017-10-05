@@ -54,7 +54,7 @@ var PopUp = {
         document.querySelector(".header .icon").setAttribute("title", "Open toggl.com - " + TogglButton.$user.email);
         PopUp.$timerRow.classList.remove("has-resume");
         if (TogglButton.$curEntry === null) {
-          PopUp.displayLoggedToday(TogglButton.$todayTotalMillis);
+          PopUp.displayLoggedToday(PopUp.getMillisForCurWorkspace());
           PopUp.$togglButton.setAttribute('data-event', 'timeEntry');
           PopUp.$togglButton.textContent = 'Start new';
           PopUp.$togglButton.parentNode.classList.remove('tracking');
@@ -122,7 +122,7 @@ var PopUp = {
       clearInterval(PopUp.$timer);
       PopUp.$timer = null;
       PopUp.$projectBullet.className = "tb-project-bullet";
-      PopUp.displayLoggedToday(TogglButton.$todayTotalMillis);
+      PopUp.displayLoggedToday(PopUp.getMillisForCurWorkspace());
       return;
     }
 
@@ -132,7 +132,7 @@ var PopUp = {
       durationField = document.querySelector("#toggl-button-duration");
 
     PopUp.$togglButton.textContent = duration;
-    PopUp.displayLoggedToday(TogglButton.$todayTotalMillis + durationMillis);
+    PopUp.displayLoggedToday(PopUp.getMillisForCurWorkspace() + durationMillis);
 
     // Update edit form duration field
     if (durationField !== document.activeElement && PopUp.durationChanged === false) {
@@ -151,7 +151,12 @@ var PopUp = {
     }
   },
 
-  displayLoggedToday(milliseconds) {
+  getMillisForCurWorkspace: function() {
+    let selectedWid = TogglButton.$currentWorkspaceId;
+    return TogglButton.$todayTotalMillisPerWorkspace[selectedWid]; 
+  },
+
+  displayLoggedToday: function(milliseconds) {
     document.querySelector("#logged-today").innerHTML = PopUp.msToTime(milliseconds);
   },
 
@@ -191,7 +196,6 @@ var PopUp = {
     }
 
     entryTimeRanges = PopUp.findStartAndEndTimes(entries);
-    console.log('entryTimeRanges', entryTimeRanges);
 
     checkUnique = function (te, listEntries) {
       var j;

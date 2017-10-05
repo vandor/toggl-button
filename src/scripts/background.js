@@ -25,7 +25,8 @@ var TogglButton = {
   $ApiV8Url: "https://www.toggl.com/api/v8",
   $ApiV9Url: "https://www.toggl.com/api/v9/workspaces",
   $ReportsApiUrl: "https://www.toggl.com/reports/api/v2",
-  $todayTotalMillis: 0,
+  $todayTotalMillisPerWorkspace: {},
+  $currentWorkspaceId: null,
   $sendResponse: null,
   $socket: null,
   $retrySocket: false,
@@ -137,6 +138,10 @@ var TogglButton = {
             TogglButton.$user.tagMap = tagMap;
             TogglButton.$user.projectTaskList = projectTaskList;
             localStorage.setItem('userToken', resp.data.api_token);
+
+            if (!TogglButton.$currentWorkspaceId) TogglButton.$currentWorkspaceId = TogglButton.$user.default_wid;
+            TogglButton.getWorkspaceTotals();
+
             if (TogglButton.$sendResponse !== null) {
               TogglButton.$sendResponse({success: (xhr.status === 200)});
               TogglButton.$sendResponse = null;
@@ -168,17 +173,21 @@ var TogglButton = {
         }
       }
     });
+  },
 
+  getWorkspaceTotals: function() {
     let today = TogglButton.getTodayFormatted();
-    TogglButton.ajax(`/summary?user_agent=toggl_button&workspace_id=598531&since=${today}&until=${today}`, {
-      baseUrl: TogglButton.$ReportsApiUrl,
-      onLoad: function (xhr) {
-	let data = JSON.parse(xhr.responseText);
-	TogglButton.$todayTotalMillis = data.total_grand;
-      },
-      onError: function (xhr) {
-	console.error('There was a problem contacting the Reports API!', xhr);
-      }
+    TogglButton.$user.workspaces.forEach(w => {
+      TogglButton.ajax(`/summary?user_agent=toggl_button&workspace_id=${w.id}&since=${today}&until=${today}`, {
+        baseUrl: TogglButton.$ReportsApiUrl,
+        onLoad: function (xhr) {
+          let data = JSON.parse(xhr.responseText);
+          TogglButton.$todayTotalMillisPerWorkspace[w.id] = data.total_grand || 0;
+        },
+        onError: function (xhr) {
+          console.error('There was a problem contacting the Reports API!', xhr);
+        }
+      });
     });
   },
 
