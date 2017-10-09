@@ -615,6 +615,16 @@ document.addEventListener('DOMContentLoaded', function () {
       chrome.tabs.create({url: "https://toggl.com/app"});
     });
 
+
+		document.querySelector(".header .today").addEventListener('click', function (e) {
+			let tooltip = document.createElement("div");
+			tooltip.className = 'te-stop-time-tooltip';
+			let contents = '';
+			contents += '<span class="te-stop-time-tooltip-entry"><span class="logged-today-title">Logged Today</span><br><span id="logged-today">00:00:00</span></span>';
+			tooltip.innerHTML = contents;
+			document.body.appendChild(tooltip);
+		});
+
     PopUp.$entries.addEventListener('click', function (e) {
       var request = {
         type: "list-continue",
