@@ -50,7 +50,7 @@ function getSidebarCurrentEle(elem) {
   editorInstance = elem.closest('.project_editor_instance');
   if (editorInstance) {
     projectId = editorInstance.getAttribute('data-project-id');
-    sidebarRoot = $('#project_list');
+    sidebarRoot = $('#projects_list');
     if (projectWasJustCreated(projectId)) {
       sidebarCurrentEle = $('.current', sidebarRoot);
     } else {
@@ -135,7 +135,7 @@ togglbutton.render('.project_editor_instance:not(.toggl)', {observe: true}, func
   });
 }, 'div#editor');
 
-togglbutton.render('#project_list:not(.toggl)', {observe: true}, function (elem) {
+togglbutton.render('#projects_list:not(.toggl)', {observe: true}, function (elem) {
   elem.addEventListener('keydown', function (e) {
     var projectNameBox, sidebarEle, clientNames, project;
     projectNameBox = e.target;
