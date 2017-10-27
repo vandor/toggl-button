@@ -172,12 +172,30 @@ p.form-row.first {
   margin: 8px;
 }
 
-.header .today {
+.workspace-current {
+  position: absolute;
+  top: 5px;
+  left: 102px;
   text-align: center;
-  padding-top: 6px;
-  padding-left: 13px;
+  max-width: 100px;
 }
 
+.workspace-current:hover {
+  opacity: .6;
+  cursor: pointer;
+}
+
+.workspace-info {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workspace-title {
+  
+}
 .logged-today-title {
   color: indianred;
 }
@@ -193,11 +211,6 @@ p.form-row.first {
   top: 5px;
   left: 102px;
   opacity: 0.7;
-}
-
-.te-stop-time-tooltip-entry {
-  display: inline-block;
-  padding-top: 5px;
 }
 
 .header .sync.loading {
