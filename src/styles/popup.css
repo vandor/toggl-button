@@ -172,17 +172,23 @@ p.form-row.first {
   margin: 8px;
 }
 
-.workspace-current {
+#workspace-current:hover {
+  opacity: .6;
+  cursor: pointer;
+}
+
+#workspace-tooltip {
+  border: 1px solid #aaa;
+}
+
+.workspace-info-container {
+  text-align: center;
+  background-color: white;
+  width: 100px;
+  max-width: 100px;
   position: absolute;
   top: 5px;
   left: 102px;
-  text-align: center;
-  max-width: 100px;
-}
-
-.workspace-current:hover {
-  opacity: .6;
-  cursor: pointer;
 }
 
 .workspace-info {
@@ -194,23 +200,7 @@ p.form-row.first {
 }
 
 .workspace-title {
-  
-}
-.logged-today-title {
   color: indianred;
-}
-
-.te-stop-time-tooltip {
-  text-align: center;
-  background-color: white;
-  width: 100px;
-  height: 100px;
-  position: absolute;
-  z-index: 99;
-  border: 1px solid black;
-  top: 5px;
-  left: 102px;
-  opacity: 0.7;
 }
 
 .header .sync.loading {
