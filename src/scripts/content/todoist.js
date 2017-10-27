@@ -137,24 +137,32 @@ togglbutton.render('.project_editor_instance:not(.toggl)', {observe: true}, func
 
 togglbutton.render('#projects_list:not(.toggl)', {observe: true}, function (elem) {
   elem.addEventListener('keydown', function (e) {
-    var projectNameBox, sidebarEle, clientNames, project;
+    var projectNameBox, sidebarEle, parentProjNames, project;
     projectNameBox = e.target;
     if (e.altKey && e.keyCode === 13 && projectNameBox.matches('div.richtext_editor')) {
       sidebarEle = projectNameBox.closest('.manager');
-      clientNames = [];
+      parentProjNames = [];
       if (!isTopLevelProject(sidebarEle)) {
-        clientNames = getProjectNameHierarchy(getParentEle(sidebarEle));
+        parentProjNames = getProjectNameHierarchy(getParentEle(sidebarEle));
       }
 
       chrome.runtime.sendMessage({
         type: 'createProject',
         projectName: projectNameBox.innerText,
-        clientName: clientNames,
+        parentProjNames: parentProjNames,
       }, function (response) {
+        var indexOfExisting,
+            projectsArr = togglbutton.user.projects;
         if (!response) {
           console.log('No response from request to create project ' + projectNameBox.innerText);
         } else if (response.success) {
           project = response.project;
+          indexOfExisting = projectsArr.findIndex(p => p.id === project.id);
+          if (indexOfExisting) {
+              projectsArr[indexOfExisting] = project;
+          } else {
+              projectsArr.push(project);
+          }
           togglbutton.projects[project.name + project.id] = project;
         } else {
           console.log('Failure creating new project ' + projectNameBox.innerText);

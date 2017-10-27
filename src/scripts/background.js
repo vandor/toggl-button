@@ -382,28 +382,23 @@ var TogglButton = {
     }
   },
 
-  findProjectByName: function (nameOrNames, clientId) {
-    var key,
-      name,
-      names = [].concat(nameOrNames),
-      projectMap = TogglButton.$user.projectMap,
-      result,
-      i;
+  findProjectByName: function (nameOrNames, workspaceId, clientId) {
+    var names = [].concat(nameOrNames),
+      projects = Object.values(TogglButton.$user.projectMap),
+      match;
 
-    for (i = 0; i < names.length; i++) {
-      name = names[i];
-      for (key in projectMap) {
-        if (projectMap.hasOwnProperty(key) && projectMap[key].name === name) {
-          result = projectMap[key];
-          if (result.wid === TogglButton.$user.default_wid) {
-            if (!clientId || result.cid === clientId) {
-              return result;
-            }
-          }
-        }
-      }
+    if (workspaceId) {
+      projects = projects.filter(p => p.wid === workspaceId);
     }
-    return result;
+    if (clientId) {
+      projects = projects.filter(p => p.cid === clientId);
+    }
+
+    names.some(name => {
+        match = projects.find(p => p.name === name);
+        return match;
+    });
+    return match;
   },
 
   findProjectByPid: function (pid) {
@@ -1502,7 +1497,7 @@ var TogglButton = {
       } else if (request.type === 'options') {
         chrome.runtime.openOptionsPage();
       } else if (request.type === 'createProject') {
-        TogglButton.createProject(request.projectName, request.clientName, sendResponse);
+        TogglButton.createProject(request.projectName, request.parentProjNames, sendResponse);
       }
 
     } catch (e) {
@@ -1645,33 +1640,45 @@ var TogglButton = {
     }
   },
 
-  findClientByName: function (nameOrNames) {
-    var clientMap = TogglButton.$user.clientMap,
-      key,
-      name,
-      names = [].concat(nameOrNames),
-      result,
-      i;
+  findWorkspaceByName: function (nameOrNames) {
+    var names = [].concat(nameOrNames).reverse(),
+      workspaces = TogglButton.$user.workspaces,
+      match;
 
-    for (i = 0; i < names.length; i++) {
-      name = names[i];
-      for (key in clientMap) {
-        if (clientMap.hasOwnProperty(key) && clientMap[key].name === name) {
-          result = clientMap[key];
-          if (result.wid === TogglButton.$user.default_wid) {
-            return result;
-          }
-        }
-      }
-    }
-    return result;
+    names.some(name => {
+      match = workspaces.find(w => w.name === name);
+      return match;
+    });
+    return match;
   },
 
-  createProject: function (projectName, clientName, sendResponse) {
-    var project, client;
-    TogglButton.fetchUser();
-    client = TogglButton.findClientByName(clientName);
-    project = TogglButton.findProjectByName(projectName, client && client.id);
+  findClientByName: function (nameOrNames, workspaceId) {
+    var names = [].concat(nameOrNames),
+      clients = TogglButton.$user.clients,
+      match;
+
+    if (workspaceId) {
+      clients = clients.filter(c => c.wid === workspaceId);
+    }
+
+    names.some(name => {
+      match = clients.find(c => c.name === name);
+      return match;
+    });
+    return match;
+  },
+
+  createProject: function (projectName, parentProjNames, sendResponse) {
+    var project, workspace, client, workspaceIndex,
+        clientNames = parentProjNames;
+
+    workspace = TogglButton.findWorkspaceByName(parentProjNames);
+    if (workspace) {
+      workspaceIndex = parentProjNames.lastIndexOf(workspace.name);
+      clientNames = parentProjNames.slice(0, workspaceIndex);
+    }
+    client = TogglButton.findClientByName(clientNames, workspace && workspace.id);
+    project = TogglButton.findProjectByName(projectName, workspace && workspace.id, client && client.id);
 
     function respondSuccess(proj) {
       sendResponse({success: true, type: 'createProject', project: proj});
@@ -1688,7 +1695,7 @@ var TogglButton = {
         payload: {
           project: {
             name: projectName,
-            wid: TogglButton.$user.default_wid,
+            wid: client && client.wid || workspace && workspace.id || TogglButton.$user.default_wid,
             is_private: true,
             cid: client && client.id,
           }
