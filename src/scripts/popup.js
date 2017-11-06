@@ -157,10 +157,19 @@ var PopUp = {
   },
 
   updateCurrentWorkspace: function(milliseconds) {
-    let curWorkspaceEle = document.querySelector('#workspace-current'),
-      curWorkspace = TogglButton.$user.workspaces.find(w => w.id = TogglButton.$currentWorkspaceId);
+    let curWorkspaceEles = document.querySelectorAll('.workspace-current'),
+        curWorkspace = TogglButton.$user.workspaces.find(w => w.id = TogglButton.$currentWorkspaceId);
 
-    curWorkspaceEle.innerHTML = PopUp.generateWorkspaceInfo(curWorkspace, milliseconds);
+    curWorkspaceEles.forEach(orig => {
+      let updated = PopUp._createNode(PopUp.generateWorkspaceInfo(curWorkspace, milliseconds));
+      orig.parentNode.replaceChild(updated, orig);
+    });
+  },
+
+  _createNode: function(htmlString) {
+    let parent = document.createElement('div');
+    parent.innerHTML = htmlString;
+    return parent.firstChild;
   },
 
   updateMenuTimer: function (data) {
@@ -549,8 +558,14 @@ var PopUp = {
   },
 
   generateWorkspaceInfo: function(workspace, millis) {
-    let timeTodayFormatted = PopUp.msToTime(millis);
-    return `<div class="workspace-info">
+    let timeTodayFormatted = PopUp.msToTime(millis),
+      cssClass = 'workspace-info';
+
+    if (workspace.id === TogglButton.$currentWorkspaceId) {
+        cssClass += ' workspace-current';
+    }
+
+    return `<div class="${cssClass}">
         <span class="workspace-title">${workspace.name}</span><br>
         <span class="logged-today">${timeTodayFormatted}</span>
       </div>`;
@@ -627,7 +642,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
-    document.querySelector("#workspace-current").addEventListener('click', function (e) {
+    document.querySelector("#workspace-current-container").addEventListener('click', function (e) {
       let tooltip = document.querySelector('#workspace-tooltip');
       let contents = '',
         workspaces = TogglButton.$user.workspaces;

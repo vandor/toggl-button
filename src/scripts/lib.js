@@ -3,7 +3,7 @@
 "use strict";
 
 var report,
-  debug = false,
+  debug = true,
   entityMap = {
     "&": "&amp;",
     "<": "&lt;",

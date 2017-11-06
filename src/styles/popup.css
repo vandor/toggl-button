@@ -172,7 +172,7 @@ p.form-row.first {
   margin: 8px;
 }
 
-#workspace-current:hover {
+#workspace-current-container:hover {
   opacity: .6;
   cursor: pointer;
 }
