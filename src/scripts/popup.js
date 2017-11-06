@@ -123,7 +123,7 @@ var PopUp = {
       clearInterval(PopUp.$timer);
       PopUp.$timer = null;
       PopUp.$projectBullet.className = "tb-project-bullet";
-      PopUp.updateWorkspaceInfos();
+      PopUp.updateCurrentEntrysWorkspaceTime();
       return;
     }
 
@@ -133,7 +133,7 @@ var PopUp = {
       durationField = document.querySelector("#toggl-button-duration");
 
     PopUp.$togglButton.textContent = duration;
-    PopUp.updateWorkspaceInfos();
+    PopUp.updateCurrentEntrysWorkspaceTime();
 
     // Update edit form duration field
     if (durationField !== document.activeElement && PopUp.durationChanged === false) {
@@ -169,15 +169,15 @@ var PopUp = {
     container.appendChild(PopUp.generateWorkspaceInfo(selectedWorkspace));
   },
 
-  updateWorkspaceInfos: function() {
+  updateCurrentEntrysWorkspaceTime: function() {
     if (TogglButton.$curEntry) {
       let curEntryWid = TogglButton.$curEntry.wid,
-          curEntryWorkspaceEles = document.querySelectorAll('.wid-' + curEntryWid),
-          curEntryWorkspace = TogglButton.$user.workspaces.find(w => w.id === curEntryWid);
+          millis = PopUp.getMillisForWorkspaceId(curEntryWid),
+          millisFormatted = PopUp.msToTime(millis),
+          wInfoEles = Array.from(document.querySelectorAll('.wid-' + curEntryWid));
 
-      curEntryWorkspaceEles.forEach(orig => {
-        let updated = PopUp.generateWorkspaceInfo(curEntryWorkspace);
-        orig.parentNode.replaceChild(updated, orig);
+      wInfoEles.map(wInfo => wInfo.querySelector('.logged-today')).forEach(timeEle => {
+          timeEle.textContent = millisFormatted;
       });
     }
   },
@@ -205,7 +205,7 @@ var PopUp = {
             infoEle = target.closest('.workspace-info');
         if (!infoEle) return;
 
-        let classArray = Array.from(infoEle.classList.values()),
+        let classArray = Array.from(infoEle.classList),
             widClass = classArray.find(c => c.startsWith('wid-'));
         if (!widClass) return;
         let wid = parseInt(widClass.substring(4));

@@ -179,6 +179,10 @@ p.form-row.first {
 
 #workspace-tooltip {
   border: 1px solid #aaa;
+  cursor: pointer;
+  -webkit-border-radius: 2px;
+  border-radius: 2px;
+  overflow:hidden;
 }
 
 .workspace-info-container {
@@ -201,6 +205,10 @@ p.form-row.first {
 
 .workspace-title {
   color: indianred;
+}
+
+#workspace-tooltip .workspace-info:hover {
+  background-color: #e6e6e6;
 }
 
 .header .sync.loading {
