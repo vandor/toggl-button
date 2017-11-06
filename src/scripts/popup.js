@@ -212,6 +212,10 @@ var PopUp = {
         PopUp.setSelectedWorkspaceId(wid);
         PopUp.hideWorkspaceTooltip();
     });
+
+    tooltip.addEventListener('mouseleave', function(e) {
+        PopUp.hideWorkspaceTooltip();
+    });
   },
 
   refreshAndShowTooltip: function() {
@@ -220,7 +224,7 @@ var PopUp = {
         workspaces = TogglButton.$user.workspaces.filter(w => w !== selectedWorkspace);
 
     workspaces.unshift(selectedWorkspace);
-    tooltip.innerHTML = '';
+    tooltip.textContent = '';
     workspaces.forEach(w => {
       tooltip.appendChild(PopUp.generateWorkspaceInfo(w));
     });
@@ -236,6 +240,7 @@ var PopUp = {
   hideWorkspaceTooltip: function() {
     let tooltip = document.querySelector('#workspace-tooltip');
     tooltip.classList.add('hidden');
+    tooltip.textContent = '';
   },
 
   updateMenuTimer: function (data) {
