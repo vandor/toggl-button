@@ -26,7 +26,7 @@ var TogglButton = {
   $ApiV9Url: "https://www.toggl.com/api/v9/workspaces",
   $ReportsApiUrl: "https://www.toggl.com/reports/api/v2",
   $todayTotalMillisPerWorkspace: {},
-  $currentWorkspaceId: null,
+  $selectedWorkspaceId: null,
   $sendResponse: null,
   $socket: null,
   $retrySocket: false,
@@ -139,7 +139,7 @@ var TogglButton = {
             TogglButton.$user.projectTaskList = projectTaskList;
             localStorage.setItem('userToken', resp.data.api_token);
 
-            if (!TogglButton.$currentWorkspaceId) TogglButton.$currentWorkspaceId = TogglButton.$user.default_wid;
+            if (!TogglButton.$selectedWorkspaceId) TogglButton.$selectedWorkspaceId = TogglButton.$user.default_wid;
             TogglButton.getWorkspaceTotals();
 
             if (TogglButton.$sendResponse !== null) {

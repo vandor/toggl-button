@@ -52,9 +52,9 @@ var PopUp = {
           PopUp.editFormAdded = true;
         }
         document.querySelector(".header .icon").setAttribute("title", "Open toggl.com - " + TogglButton.$user.email);
+        PopUp.setSelectedWorkspaceInfo();
         PopUp.$timerRow.classList.remove("has-resume");
         if (TogglButton.$curEntry === null) {
-          PopUp.updateCurrentWorkspace(PopUp.getMillisForCurWorkspace());
           PopUp.$togglButton.setAttribute('data-event', 'timeEntry');
           PopUp.$togglButton.textContent = 'Start new';
           PopUp.$togglButton.parentNode.classList.remove('tracking');
@@ -122,7 +122,7 @@ var PopUp = {
       clearInterval(PopUp.$timer);
       PopUp.$timer = null;
       PopUp.$projectBullet.className = "tb-project-bullet";
-      PopUp.updateCurrentWorkspace(PopUp.getMillisForCurWorkspace());
+      PopUp.updateWorkspaceInfos();
       return;
     }
 
@@ -132,7 +132,7 @@ var PopUp = {
       durationField = document.querySelector("#toggl-button-duration");
 
     PopUp.$togglButton.textContent = duration;
-    PopUp.updateCurrentWorkspace(PopUp.getMillisForCurWorkspace() + durationMillis);
+    PopUp.updateWorkspaceInfos();
 
     // Update edit form duration field
     if (durationField !== document.activeElement && PopUp.durationChanged === false) {
@@ -151,19 +151,33 @@ var PopUp = {
     }
   },
 
-  getMillisForCurWorkspace: function() {
-    let selectedWid = TogglButton.$currentWorkspaceId;
-    return TogglButton.$todayTotalMillisPerWorkspace[selectedWid]; 
+  getMillisForWorkspaceId: function(wid) {
+    if (!wid) return 0;
+    let millis = TogglButton.$todayTotalMillisPerWorkspace[wid];
+    if (TogglButton.$curEntry !== null && TogglButton.$curEntry.wid === wid) {
+        let entryMillis = new Date() - new Date(TogglButton.$curEntry.start);
+        millis += entryMillis; 
+    }
+    return millis;
   },
 
-  updateCurrentWorkspace: function(milliseconds) {
-    let curWorkspaceEles = document.querySelectorAll('.workspace-current'),
-        curWorkspace = TogglButton.$user.workspaces.find(w => w.id = TogglButton.$currentWorkspaceId);
+  setSelectedWorkspaceInfo: function() {
+    let selectedWorkspace  = TogglButton.$user.workspaces.find(w => w.id === TogglButton.$selectedWorkspaceId),
+        selectedWorkspaceInfo = PopUp.generateWorkspaceInfo(selectedWorkspace);
+    document.querySelector("#selected-workspace-container").innerHTML = selectedWorkspaceInfo;
+  },
 
-    curWorkspaceEles.forEach(orig => {
-      let updated = PopUp._createNode(PopUp.generateWorkspaceInfo(curWorkspace, milliseconds));
-      orig.parentNode.replaceChild(updated, orig);
-    });
+  updateWorkspaceInfos: function() {
+    if (TogglButton.$curEntry) {
+      let curEntryWid = TogglButton.$curEntry.wid,
+          curEntryWorkspaceEles = document.querySelectorAll('.wid-' + curEntryWid),
+          curEntryWorkspace = TogglButton.$user.workspaces.find(w => w.id === curEntryWid);
+
+      curEntryWorkspaceEles.forEach(orig => {
+        let updated = PopUp._createNode(PopUp.generateWorkspaceInfo(curEntryWorkspace));
+        orig.parentNode.replaceChild(updated, orig);
+      });
+    }
   },
 
   _createNode: function(htmlString) {
@@ -557,17 +571,15 @@ var PopUp = {
     });
   },
 
-  generateWorkspaceInfo: function(workspace, millis) {
-    let timeTodayFormatted = PopUp.msToTime(millis),
-      cssClass = 'workspace-info';
-
-    if (workspace.id === TogglButton.$currentWorkspaceId) {
-        cssClass += ' workspace-current';
-    }
+  generateWorkspaceInfo: function(workspace) {
+    if (!workspace) return '';
+    let cssClass = 'workspace-info wid-' + workspace.id,
+        millis = PopUp.getMillisForWorkspaceId(workspace.id),
+        millisFormatted = PopUp.msToTime(millis);
 
     return `<div class="${cssClass}">
         <span class="workspace-title">${workspace.name}</span><br>
-        <span class="logged-today">${timeTodayFormatted}</span>
+        <span class="logged-today">${millisFormatted}</span>
       </div>`;
   },
 };
@@ -642,14 +654,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
-    document.querySelector("#workspace-current-container").addEventListener('click', function (e) {
+    document.querySelector("#selected-workspace-container").addEventListener('click', function (e) {
       let tooltip = document.querySelector('#workspace-tooltip');
       let contents = '',
         workspaces = TogglButton.$user.workspaces;
 
       workspaces.forEach(w => {
-        let workspaceMillis = TogglButton.$todayTotalMillisPerWorkspace[w.id];
-        contents += PopUp.generateWorkspaceInfo(w, workspaceMillis);
+        contents += PopUp.generateWorkspaceInfo(w);
       });
 
       tooltip.innerHTML = contents;
