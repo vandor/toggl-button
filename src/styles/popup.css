@@ -178,7 +178,7 @@ p.form-row.first {
 }
 
 #workspace-tooltip {
-  border: 1px solid #aaa;
+  box-shadow: 0 0 0 1px #aaa, 0 1px 1px rgba(0,0,0,.5);
   cursor: pointer;
   -webkit-border-radius: 2px;
   border-radius: 2px;
