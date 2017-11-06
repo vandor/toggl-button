@@ -163,7 +163,7 @@ var PopUp = {
   },
 
   displaySelectedWorkspaceInfo: function() {
-    let selectedWorkspace  = TogglButton.$user.workspaces.find(w => w.id === TogglButton.$selectedWorkspaceId),
+    let selectedWorkspace  = PopUp.getSelectedWorkspace(),
         container = document.querySelector("#selected-workspace-container");
     container.innerHTML = '';
     container.appendChild(PopUp.generateWorkspaceInfo(selectedWorkspace));
@@ -186,6 +186,10 @@ var PopUp = {
     let parent = document.createElement('div');
     parent.innerHTML = htmlString;
     return parent.firstChild;
+  },
+
+  getSelectedWorkspace: function() {
+    return TogglButton.$user.workspaces.find(w => w.id === TogglButton.$selectedWorkspaceId);
   },
 
   setSelectedWorkspaceId: function(wid) {
@@ -211,9 +215,11 @@ var PopUp = {
   },
 
   refreshAndShowTooltip: function() {
-    let tooltip = document.querySelector('#workspace-tooltip');
-    let workspaces = TogglButton.$user.workspaces;
+    let tooltip = document.querySelector('#workspace-tooltip'),
+        selectedWorkspace = PopUp.getSelectedWorkspace(),
+        workspaces = TogglButton.$user.workspaces.filter(w => w !== selectedWorkspace);
 
+    workspaces.unshift(selectedWorkspace);
     tooltip.innerHTML = '';
     workspaces.forEach(w => {
       tooltip.appendChild(PopUp.generateWorkspaceInfo(w));
