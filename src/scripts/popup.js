@@ -52,7 +52,8 @@ var PopUp = {
           PopUp.editFormAdded = true;
         }
         document.querySelector(".header .icon").setAttribute("title", "Open toggl.com - " + TogglButton.$user.email);
-        PopUp.setSelectedWorkspaceInfo();
+        PopUp.displaySelectedWorkspaceInfo();
+        PopUp.setUpTooltip();
         PopUp.$timerRow.classList.remove("has-resume");
         if (TogglButton.$curEntry === null) {
           PopUp.$togglButton.setAttribute('data-event', 'timeEntry');
@@ -161,7 +162,7 @@ var PopUp = {
     return millis;
   },
 
-  setSelectedWorkspaceInfo: function() {
+  displaySelectedWorkspaceInfo: function() {
     let selectedWorkspace  = TogglButton.$user.workspaces.find(w => w.id === TogglButton.$selectedWorkspaceId),
         container = document.querySelector("#selected-workspace-container");
     container.innerHTML = '';
@@ -185,6 +186,50 @@ var PopUp = {
     let parent = document.createElement('div');
     parent.innerHTML = htmlString;
     return parent.firstChild;
+  },
+
+  setSelectedWorkspaceId: function(wid) {
+      TogglButton.$selectedWorkspaceId = wid;
+      PopUp.displaySelectedWorkspaceInfo();
+  },
+
+  setUpTooltip: function() {
+    let tooltip = document.querySelector('#workspace-tooltip');
+
+    tooltip.addEventListener('click', function(e) {
+        let target = e.target,
+            infoEle = target.closest('.workspace-info');
+        if (!infoEle) return;
+
+        let classArray = Array.from(infoEle.classList.values()),
+            widClass = classArray.find(c => c.startsWith('wid-'));
+        if (!widClass) return;
+        let wid = parseInt(widClass.substring(4));
+        PopUp.setSelectedWorkspaceId(wid);
+        PopUp.hideWorkspaceTooltip();
+    });
+  },
+
+  refreshAndShowTooltip: function() {
+    let tooltip = document.querySelector('#workspace-tooltip');
+    let workspaces = TogglButton.$user.workspaces;
+
+    tooltip.innerHTML = '';
+    workspaces.forEach(w => {
+      tooltip.appendChild(PopUp.generateWorkspaceInfo(w));
+    });
+
+    PopUp.showWorkspaceTooltip();
+  },
+
+  showWorkspaceTooltip: function() {
+    let tooltip = document.querySelector('#workspace-tooltip');
+    tooltip.classList.remove('hidden');
+  },
+
+  hideWorkspaceTooltip: function() {
+    let tooltip = document.querySelector('#workspace-tooltip');
+    tooltip.classList.add('hidden');
   },
 
   updateMenuTimer: function (data) {
@@ -657,16 +702,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     document.querySelector("#selected-workspace-container").addEventListener('click', function (e) {
-      let tooltip = document.querySelector('#workspace-tooltip');
-      let contents = '',
-        workspaces = TogglButton.$user.workspaces;
-
-      tooltip.innerHTML = '';
-      workspaces.forEach(w => {
-        tooltip.appendChild(PopUp.generateWorkspaceInfo(w));
-      });
-
-      tooltip.classList.remove('hidden');
+        PopUp.refreshAndShowTooltip();
     });
 
     PopUp.$entries.addEventListener('click', function (e) {
