@@ -163,8 +163,9 @@ var PopUp = {
 
   setSelectedWorkspaceInfo: function() {
     let selectedWorkspace  = TogglButton.$user.workspaces.find(w => w.id === TogglButton.$selectedWorkspaceId),
-        selectedWorkspaceInfo = PopUp.generateWorkspaceInfo(selectedWorkspace);
-    document.querySelector("#selected-workspace-container").innerHTML = selectedWorkspaceInfo;
+        container = document.querySelector("#selected-workspace-container");
+    container.innerHTML = '';
+    container.appendChild(PopUp.generateWorkspaceInfo(selectedWorkspace));
   },
 
   updateWorkspaceInfos: function() {
@@ -174,7 +175,7 @@ var PopUp = {
           curEntryWorkspace = TogglButton.$user.workspaces.find(w => w.id === curEntryWid);
 
       curEntryWorkspaceEles.forEach(orig => {
-        let updated = PopUp._createNode(PopUp.generateWorkspaceInfo(curEntryWorkspace));
+        let updated = PopUp.generateWorkspaceInfo(curEntryWorkspace);
         orig.parentNode.replaceChild(updated, orig);
       });
     }
@@ -577,10 +578,11 @@ var PopUp = {
         millis = PopUp.getMillisForWorkspaceId(workspace.id),
         millisFormatted = PopUp.msToTime(millis);
 
-    return `<div class="${cssClass}">
+    let infoEle = PopUp._createNode(`<div class="${cssClass}">
         <span class="workspace-title">${workspace.name}</span><br>
         <span class="logged-today">${millisFormatted}</span>
-      </div>`;
+      </div>`);
+    return infoEle;
   },
 };
 
@@ -659,11 +661,11 @@ document.addEventListener('DOMContentLoaded', function () {
       let contents = '',
         workspaces = TogglButton.$user.workspaces;
 
+      tooltip.innerHTML = '';
       workspaces.forEach(w => {
-        contents += PopUp.generateWorkspaceInfo(w);
+        tooltip.appendChild(PopUp.generateWorkspaceInfo(w));
       });
 
-      tooltip.innerHTML = contents;
       tooltip.classList.remove('hidden');
     });
 
